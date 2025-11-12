@@ -52,7 +52,7 @@ const PotsCard = ({
   const deleteFormRef = useRef<HTMLFormElement | null>(null);
 
   // Progress calculation
-  const progress = target ? Math.min((spent / target) * 100, 100) : 0;
+// const progress = target ? Math.min((spent / target) * 100, 100) : 0;
 
   // Close dropdown if clicked outside
   useEffect(() => {

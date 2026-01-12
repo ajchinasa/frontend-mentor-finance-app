@@ -36,11 +36,11 @@ const Budgets = () => {
   const [newColorName, setNewColorName] = useState("");
   const [themeOpen, setThemeOpen] = useState(false);
   const [budgetName, setBudgetName] = useState("");
-  const [budgetNameError, setBudgetNameError] = useState("");
+  const  [_, setBudgetNameError] = useState("");
 
-  /* ✅ FIX: clean open */
+  /*FIX: clean open */
   const openAddBudgetModal = () => {
-    setSelectedCategory(BUDGET_CATEGORIES[0]); // ← RESET
+    setSelectedCategory(BUDGET_CATEGORIES[0]); //RESET
     setCustomCategory("");
     setBudgetName("");
     setNewLimit(0);
@@ -163,7 +163,7 @@ const Budgets = () => {
 
         {/* Budget Cards */}
         <div className="flex flex-col w-full lg:w-2/3 pb-18 gap-5">
-          {budgetItemsState.map((budget, i) => (
+          {budgetItemsState.map((budget, _) => (
             <BudgetCard
               key={budget.id}
               budgetName={budget.label}

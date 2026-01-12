@@ -38,7 +38,7 @@ const BudgetCard = ({
   category,
   color,
   max,
-  spent,
+  // spent,
   spendingHistory,
   allBudgetItems,
   onUpdate,

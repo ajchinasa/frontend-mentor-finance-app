@@ -5,7 +5,22 @@ import BudgetCard from "../../components/budgetPage/BudgetCardProps";
 import type { spendingSummaryItem } from "../../data/budgetPage/spendingSummary";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 
+const BUDGET_CATEGORIES = [
+  "Entertainment",
+  "Dining",
+  "Education",
+  "Family",
+  "Others",
+] as const;
+
+type BudgetCategory = (typeof BUDGET_CATEGORIES)[number];
+
 const Budgets = () => {
+  const [selectedCategory, setSelectedCategory] =
+    useState<BudgetCategory>("Entertainment");
+
+  const [customCategory, setCustomCategory] = useState("");
+
   // Load budgets from localStorage on mount
   const [budgetItemsState, setBudgetItemsState] = useState<
     spendingSummaryItem[]
@@ -20,6 +35,20 @@ const Budgets = () => {
   const [newColor, setNewColor] = useState("#201F24");
   const [newColorName, setNewColorName] = useState("");
   const [themeOpen, setThemeOpen] = useState(false);
+  const [budgetName, setBudgetName] = useState("");
+  const [budgetNameError, setBudgetNameError] = useState("");
+
+  /* ✅ FIX: clean open */
+  const openAddBudgetModal = () => {
+    setSelectedCategory(BUDGET_CATEGORIES[0]); // ← RESET
+    setCustomCategory("");
+    setBudgetName("");
+    setNewLimit(0);
+    setNewColor("#201F24");
+    setNewColorName("");
+    setThemeOpen(false);
+    setIsAddModalOpen(true);
+  };
 
   //Save to localStorage whenever budgets change (for overview page)
   useEffect(() => {
@@ -40,15 +69,21 @@ const Budgets = () => {
 
   // Update budget
   const handleUpdate = (
-    index: number,
-    updated: { category: string; max: number; color: string }
+    id: string,
+    updated: {
+      budgetName: string;
+      category: string;
+      max: number;
+      color: string;
+    }
   ) => {
     setBudgetItemsState((prev) =>
-      prev.map((item, i) =>
-        i === index
+      prev.map((item) =>
+        item.id === id
           ? {
               ...item,
-              label: updated.category,
+              label: updated.budgetName,
+              category: updated.category,
               limit: updated.max,
               color: updated.color,
             }
@@ -64,35 +99,61 @@ const Budgets = () => {
     );
   };
 
+  const handleAddSpending = (id: string, amount: number) => {
+    setBudgetItemsState((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, amount: item.amount + amount } : item
+      )
+    );
+  };
+
   // Add new budget
-  const handleAddBudgetSubmit = (e: React.FormEvent) => {
+  const handleAddBudgetSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!newCategory.trim()) return alert("Please enter a category name");
-    if (newLimit <= 0) return alert("Please enter a valid limit");
+    if (!budgetName.trim()) {
+      alert("Please enter a budget name");
+      return;
+    }
+    const finalCategory =
+      selectedCategory === "Others" ? customCategory.trim() : selectedCategory;
+
+    if (!finalCategory) {
+      alert("Please enter a category name");
+      return;
+    }
+
+    if (newLimit <= 0) {
+      alert("Please enter a valid limit");
+      return;
+    }
 
     const newBudget: spendingSummaryItem = {
-      label: newCategory,
+      id: crypto.randomUUID(),
+      label: budgetName.trim(),
+      category: finalCategory,
       amount: 0,
       limit: newLimit,
       color: newColor,
     };
 
-    // Add new budget to top
     setBudgetItemsState((prev) => [newBudget, ...prev]);
     setIsAddModalOpen(false);
 
     // Reset form
+    setBudgetName("");
     setNewCategory("");
+    setCustomCategory("");
     setNewLimit(0);
     setNewColor("#201F24");
     setNewColorName("");
+    setThemeOpen(false);
   };
 
   return (
     <div className="flex flex-col w-full md:p-4 lg:px-8 lg:py-2 gap-8">
       {/* Header */}
-      <Header onAddBudgetClick={() => setIsAddModalOpen(true)} />
+      <Header onAddBudgetClick={openAddBudgetModal} />
 
       <div className="flex flex-col lg:flex-row w-full gap-5 font">
         {/* Spending Summary updates live */}
@@ -104,15 +165,17 @@ const Budgets = () => {
         <div className="flex flex-col w-full lg:w-2/3 pb-18 gap-5">
           {budgetItemsState.map((budget, i) => (
             <BudgetCard
-              key={i}
-              category={budget.label}
+              key={budget.id}
+              budgetName={budget.label}
+              category={budget.category}
               color={budget.color}
               max={budget.limit}
               spent={budget.amount}
               spendingHistory={[]}
               allBudgetItems={budgetItemsState}
-              onUpdate={(updated) => handleUpdate(i, updated)}
-              onDelete={handleDeleteBudget}
+              onAddSpending={(amount) => handleAddSpending(budget.id, amount)}
+              onUpdate={(updated) => handleUpdate(budget.id, updated)}
+              onDelete={() => handleDeleteBudget(budget.label)}
             />
           ))}
         </div>
@@ -122,7 +185,11 @@ const Budgets = () => {
       {isAddModalOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
-          onClick={() => setIsAddModalOpen(false)}
+          onClick={() => {
+            setIsAddModalOpen(false);
+            setSelectedCategory(BUDGET_CATEGORIES[0]); // reset category
+            setCustomCategory(""); // reset custom input
+          }}
         >
           <div
             className="bg-white rounded-xl p-6 w-96 shadow-lg relative"
@@ -145,16 +212,58 @@ const Budgets = () => {
 
             <form onSubmit={handleAddBudgetSubmit}>
               {/* Category */}
+              <label className="block text-sm text-[#696868] ">
+                Budget Name
+                <input
+                  type="text"
+                  placeholder="Enter budget name"
+                  value={budgetName}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBudgetName(value);
+
+                    const exists = budgetItemsState.some(
+                      (item) =>
+                        item.label.toLowerCase() === value.trim().toLowerCase()
+                    );
+
+                    setBudgetNameError(
+                      exists ? "A budget with this name already exists" : ""
+                    );
+                  }}
+                  className="w-full border border-gray-300 rounded-lg p-2 mb-4 mt-2"
+                />
+              </label>
+
               <label className="block text-sm text-[#696868] mb-2">
                 Budget Category
               </label>
-              <input
-                type="text"
-                placeholder="Enter category name"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#201F24]"
-              />
+
+              <div className="mb-4 rounded-lg border border-gray-300 focus-within:ring-2 focus-within:ring-[#201F24] focus-within:border-[#201F24]">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) =>
+                    setSelectedCategory(e.target.value as BudgetCategory)
+                  }
+                  className="w-full p-2 rounded-lg bg-transparent focus:outline-none cursor-pointer"
+                >
+                  {BUDGET_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedCategory === "Others" && (
+                <input
+                  type="text"
+                  placeholder="Enter custom category"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2 mb-4"
+                />
+              )}
 
               {/* Limit */}
               <label className="block text-sm text-[#696868] mb-2">
@@ -182,7 +291,7 @@ const Budgets = () => {
                 <button
                   type="button"
                   onClick={() => setThemeOpen((prev) => !prev)}
-                  className="w-full flex justify-between items-center px-3 py-2 border rounded-lg text-sm text-[#201F24] focus:outline-none"
+                  className="w-full cursor-pointer flex justify-between items-center px-3 py-2 border rounded-lg text-sm text-[#201F24] focus:outline-none"
                 >
                   <div className="flex items-center gap-2">
                     <span

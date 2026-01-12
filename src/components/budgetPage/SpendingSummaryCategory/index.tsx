@@ -12,7 +12,7 @@ const SpendingSummaryCategory = ({
   color,
 }: spendingSummaryCategoryProps) => {
   return (
-    <div className="w-full flex text-sm gap-10 justify-between items-center border-b last:border-b-0 border-gray-200 pb-2 cursor-pointer">
+    <div className=" w-full flex text-sm gap-10 justify-between items-center border-b last:border-b-0 border-gray-200 pb-2 cursor-pointer">
       {/* Label + Color Bar */}
       <div className="flex items-center gap-2">
         <div

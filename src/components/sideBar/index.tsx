@@ -101,12 +101,22 @@ const SideBar = () => {
 
         {/* Recurring Bills */}
         <li className="">
-          <button className="group relative flex flex-col lg:flex-row items-center gap-2 w-full px-4 py-2 rounded-md hover:bg-[#F8F4F0] hover:text-black cursor-pointer transition-all duration-200 transform hover:scale-[1.03] hover:shadow-md text-left ">
+          <NavLink
+            to="/recurringBills"
+            className={({ isActive }) =>
+              `group relative flex flex-col lg:flex-row items-center gap-2 w-full px-4 py-2 rounded-md transition-all duration-200 transform hover:scale-[1.03] hover:shadow-md text-left ${
+                isActive
+                  ? "bg-white text-black"
+                  : "hover:bg-[#F8F4F0] hover:text-black"
+              }`
+            }
+          >
+            {" "}
             {/* Green line on hover */}
             <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#277C78] rounded opacity-0 group-hover:opacity-100 transition-all duration-200"></span>
-            <PiReceiptFill className="text-[#B3B3B3] group-hover:text-[#277C78]" />
-            <p className="hidden md:block text-base"> Recurring Bills</p>
-          </button>
+            <PiReceiptFill className="text-[#B3B3B3] group-hover:text-[#277C78]" />{" "}
+            <p className="hidden md:block text-base">Recurring Bills</p>
+          </NavLink>
         </li>
       </ul>
 

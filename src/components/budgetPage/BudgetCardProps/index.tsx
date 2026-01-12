@@ -1,7 +1,10 @@
+
+
 import { MdCircle, MdArrowRight } from "react-icons/md";
 import { BsThreeDots } from "react-icons/bs";
 import { useState, useRef, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
+import { CiCirclePlus } from "react-icons/ci";
 
 interface Spending {
   id: number;
@@ -12,6 +15,7 @@ interface Spending {
 }
 
 interface BudgetCardProps {
+  budgetName: string; 
   category: string;
   color: string;
   max: number;
@@ -19,14 +23,18 @@ interface BudgetCardProps {
   spendingHistory: Spending[];
   allBudgetItems: { label: string; color: string }[];
   onUpdate?: (updated: {
+    budgetName: string;
     category: string;
     max: number;
     color: string;
   }) => void;
   onDelete?: (category: string) => void;
+    onAddSpending?: (amount: number) => void;
+
 }
 
 const BudgetCard = ({
+  budgetName, 
   category,
   color,
   max,
@@ -35,6 +43,7 @@ const BudgetCard = ({
   allBudgetItems,
   onUpdate,
   onDelete,
+   onAddSpending,
 }: BudgetCardProps) => {
   // See All modal state (used for Latest Spending "See All")
   const [isOpen, setIsOpen] = useState(false);
@@ -49,7 +58,35 @@ const BudgetCard = ({
   const [newColor, setNewColor] = useState(color);
   const [newColorName, setNewColorName] = useState("");
   const [themeOpen, setThemeOpen] = useState(false);
+  const [newBudgetName, setNewBudgetName] = useState(budgetName);
+  const [nameError, setNameError] = useState("");
 
+   // plus icon modal state
+const [addOpen, setAddOpen] = useState(false);
+const [spendingName, setSpendingName] = useState("");
+const [spendingDate, setSpendingDate] = useState("");
+const [spendingAmount, setSpendingAmount] = useState("");
+
+//Local State for Spending History
+const [localSpendingHistory, setLocalSpendingHistory] =
+  useState<Spending[]>(() => {
+    const saved = localStorage.getItem(`spending-${category}`);
+    return saved ? JSON.parse(saved) : spendingHistory;
+  });
+useEffect(() => {
+  localStorage.setItem(
+    `spending-${category}`,
+    JSON.stringify(localSpendingHistory)
+  );
+}, [localSpendingHistory, category]);
+
+//Total Spent Value State
+const totalSpent = localSpendingHistory.reduce(
+  (acc, item) => acc + Number(item.amount),
+  0
+);
+
+//Budget Categories
   const categories = [
     "Entertainment",
     "Groceries",
@@ -58,6 +95,9 @@ const BudgetCard = ({
     "Education",
     "Other",
   ];
+
+  
+  
   const [selectedCategory, setSelectedCategory] = useState(category);
   const [customCategory, setCustomCategory] = useState("");
 
@@ -112,9 +152,10 @@ const BudgetCard = ({
   }, [deleteOpen]);
 
   // Progress calculation
-  const remaining = max - spent;
-  const isOverspent = spent > max;
-  const progress = Math.min((spent / max) * 100, 100);
+  const remaining = max - totalSpent;
+const isOverspent = totalSpent > max;
+const progress = Math.min((totalSpent / max) * 100, 100);
+
 
   return (
     <div className="bg-white rounded-xl p-4 w-full font-[Public_Sans] shadow-sm">
@@ -123,7 +164,7 @@ const BudgetCard = ({
         <div className="flex items-center gap-2">
           <MdCircle className="text-lg" style={{ color }} />
           <p className="font-bold text-[#201F24] text-2xl lg:text-base truncate max-w-[150px] cursor-pointer">
-            {category}
+            {budgetName}
           </p>
         </div>
 
@@ -147,6 +188,7 @@ const BudgetCard = ({
                   setNewColorName("");
                   setSelectedCategory(category);
                   setCustomCategory("");
+                  setNewBudgetName(budgetName);
                 }}
                 className="block w-full text-left px-4 py-2 text-sm text-[#201F24] hover:bg-gray-100"
               >
@@ -195,10 +237,12 @@ const BudgetCard = ({
               Spent
             </p>
             <p className="font-bold text-[#201F24] text-base md:text-xl lg:text-sm">
-              ${spent.toFixed(2)}
+               ${totalSpent.toFixed(2)}
             </p>
           </div>
         </div>
+
+        
 
         <div className="flex items-center gap-2 mx-auto">
           <span
@@ -222,20 +266,125 @@ const BudgetCard = ({
           <p className="font-bold text-sm md:text-lg lg:text-sm text-[#201F24]">
             Latest Spending
           </p>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="flex gap-2 items-center text-[#696868] hover:underline"
-          >
-            <p className="font-normal text-sm md:text-xl lg:text-xs cursor-pointer">
-              See All
-            </p>
-            <MdArrowRight />
-          </button>
+          <div className="flex gap-6">
+             {/* add latest spending list*/}
+              {/* plus icon*/}
+            <CiCirclePlus
+  className="text-xl cursor-pointer hover:text-black"
+  onClick={() => setAddOpen(true)}
+  aria-label="Add spending"
+/>
+
+{/* plus icon modal*/}
+
+{addOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+  onClick={() => setAddOpen(false)}>
+    <div className="bg-white rounded-xl p-6 w-[90%] max-w-md relative"
+     onClick={(e) => e.stopPropagation()}>
+      {/* Close */}
+      <button
+        onClick={() => setAddOpen(false)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-black"
+        aria-label="Close"
+      >
+        <IoIosCloseCircleOutline size={22} />
+      </button>
+
+      <h3 className="text-lg font-bold text-[#201F24] mb-4">
+        Add A Spending
+      </h3>
+
+    <form
+  className="flex flex-col gap-4"
+  onSubmit={(e) => {
+    e.preventDefault();
+
+    const newSpending: Spending = {
+      id: Date.now(), 
+      name: spendingName,
+      amount: Number(spendingAmount),
+      date: spendingDate,
+    };
+
+    setLocalSpendingHistory((prev) => [
+      newSpending,
+      ...prev, // newest budget first
+    ]);
+
+  onAddSpending?.(Number(spendingAmount));
+  
+    // reset & close
+    setSpendingName("");
+    setSpendingDate("");
+    setSpendingAmount("");
+    setAddOpen(false);
+  }}
+>
+
+        <label className="text-sm text-[#696868]">
+          Spending Name
+          <input
+            type="text"
+            value={spendingName}
+            onChange={(e) => setSpendingName(e.target.value)}
+            placeholder="Enter spending name"
+            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+            required
+          />
+        </label>
+
+        <label className="text-sm text-[#696868]">
+          Date
+          <input
+            type="date"
+            value={spendingDate}
+            onChange={(e) => setSpendingDate(e.target.value)}
+            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+            required
+          />
+        </label>
+
+        <label className="text-sm text-[#696868]">
+          Amount
+          <input
+            type="number"
+            step="0.01"
+            value={spendingAmount}
+            onChange={(e) => setSpendingAmount(e.target.value)}
+            placeholder="0.00"
+            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+            required
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="mt-2 bg-[#201F24] text-white rounded-lg py-2 text-sm font-semibold hover:opacity-90"
+        >
+          Add Spending
+        </button>
+      </form>
+    </div>
+  </div>
+)}
+
+               {/* see all button*/}
+            <button
+              onClick={() => setIsOpen(true)}
+              className="flex gap-2 items-center text-[#696868] hover:underline "
+            >
+              <p className="font-normal text-sm md:text-xl lg:text-xs cursor-pointer">
+                See All
+              </p>
+              <MdArrowRight />
+            </button>
+          </div>
         </div>
 
         {/* Spending list - show top 3 (or customize) */}
         <ul className="space-y-3">
-          {spendingHistory.slice(0, 3).map((item) => (
+          {localSpendingHistory.slice(0, 3).map((item) => (
             <li
               key={item.id}
               className="flex justify-between items-center border-b last:border-b-0 border-gray-200 pb-2"
@@ -257,7 +406,7 @@ const BudgetCard = ({
                 </div>
               </div>
               <div className="flex flex-col gap-2 text-right">
-                <p className="text-lg font-bold text-[#201F24]">
+                <p className="text-lg font-bold text-[#DC2626]">
                   -${item.amount.toFixed(2)}
                 </p>
                 <p className="text-base lg:text-xs text-[#696868]">
@@ -267,9 +416,9 @@ const BudgetCard = ({
             </li>
           ))}
 
-          {spendingHistory.length === 0 && (
-            <li className="text-sm text-[#696868]">No spending yet.</li>
-          )}
+       {localSpendingHistory.length === 0 && (
+  <li className="text-sm text-[#696868]">No spending yet.</li>
+)}
         </ul>
       </div>
 
@@ -285,8 +434,9 @@ const BudgetCard = ({
           >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#201F24]">
-                All Spending - {category}
+                All Spending - {budgetName}
               </h3>
+              
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-lg font-bold text-gray-500 hover:text-black"
@@ -296,7 +446,8 @@ const BudgetCard = ({
               </button>
             </div>
             <ul className="space-y-3">
-              {spendingHistory.map((item) => (
+            {localSpendingHistory.map((item) => (
+
                 <li
                   key={item.id}
                   className="flex justify-between items-center border-b last:border-b-0 border-gray-200 pb-2"
@@ -316,13 +467,18 @@ const BudgetCard = ({
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
-                    <p className="text-sm font-bold text-[#201F24]">
+                    <p className="text-sm font-bold text-[#DC2626]">
                       -${item.amount.toFixed(2)}
                     </p>
                     <p className="text-xs text-[#696868]">{item.date}</p>
                   </div>
                 </li>
               ))}
+
+              {localSpendingHistory.length === 0 && (
+  <li className="text-sm text-[#696868]">No spending yet.</li>
+)}
+
             </ul>
           </div>
         </div>
@@ -349,8 +505,8 @@ const BudgetCard = ({
               Delete Budget
             </h3>
             <p className="text-sm text-[#696868] mb-5">
-              Are you sure you want to delete the <b>{category}</b> budget? This
-              action cannot be undone.
+              Are you sure you want to delete the <b>{budgetName}</b> budget?
+              This action cannot be undone.
             </p>
 
             <form
@@ -399,7 +555,7 @@ const BudgetCard = ({
             </button>
 
             <h3 className="text-lg font-bold text-[#201F24] mb-4">
-              Edit {category} Budget
+              Edit {budgetName} Budget
             </h3>
 
             <p className="mb-4 text-sm text-[#696868]">
@@ -410,27 +566,65 @@ const BudgetCard = ({
               ref={formRef}
               onSubmit={(e) => {
                 e.preventDefault();
+                // block submit
+                if (nameError) return; 
+
                 const finalCategory =
                   selectedCategory === "Other"
                     ? customCategory
                     : selectedCategory;
-                if (onUpdate) {
-                  onUpdate({
-                    category: finalCategory,
-                    max: newMax,
-                    color: newColor,
-                  });
-                }
+
+                onUpdate?.({
+                  budgetName: newBudgetName.trim(),
+                  category: finalCategory,
+                  max: newMax,
+                  color: newColor,
+                });
+
                 setEditOpen(false);
               }}
             >
+              <label className="block text-sm text-[#696868] mb-2">
+                Budget Name
+                <input
+                  type="text"
+                  placeholder="Enter budget name"
+                  value={newBudgetName}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setNewBudgetName(value);
+
+                    const isDuplicate = allBudgetItems.some(
+                      (item) =>
+                        item.label.toLowerCase() === value.toLowerCase() &&
+                        item.label !== budgetName 
+                    );
+
+                    if (isDuplicate) {
+                      setNameError("This budget name already exists");
+                    } else {
+                      setNameError("");
+                    }
+                  }}
+                  className={`w-full border border-gray-300 rounded-lg p-2 mt-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#201F24] ${
+                    nameError
+                      ? "border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:ring-[#201F24]"
+                  }`}
+                />
+              </label>
+
+              {nameError && (
+                <p className="text-xs text-red-600 mb-3">{nameError}</p>
+              )}
+
               <label className="block text-sm text-[#696868] mb-2">
                 Budget Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#201F24]"
+                className="w-full cursor-pointer border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#201F24]"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -473,7 +667,7 @@ const BudgetCard = ({
                 <button
                   type="button"
                   onClick={() => setThemeOpen((prev) => !prev)}
-                  className="w-full flex justify-between items-center px-3 py-2 border rounded-lg text-sm text-[#201F24] focus:outline-none"
+                  className="w-full cursor-pointer flex justify-between items-center px-3 py-2 border rounded-lg text-sm text-[#201F24] focus:outline-none"
                 >
                   <div className="flex items-center gap-2">
                     <span
@@ -563,7 +757,14 @@ const BudgetCard = ({
 
               <button
                 type="submit"
-                className="w-full px-4 py-2 text-sm bg-[#201F24] text-white rounded-lg hover:bg-black mt-5"
+                disabled={!!nameError || !newBudgetName.trim()}
+                className={`w-full px-4 py-2 text-sm rounded-lg mt-5 transition
+    ${
+      nameError || !newBudgetName.trim()
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+        : "bg-[#201F24] text-white hover:bg-black"
+    }
+  `}
               >
                 Save Changes
               </button>

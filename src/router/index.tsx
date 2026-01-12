@@ -6,6 +6,8 @@ import Transactions from "../Pages/transactions";
 import NotFound from "../Pages/not-found";
 import Budgets from "../Pages/budjets";
 import Pots from "../Pages/pots";
+import RecurringBills from "../Pages/recurringBills";
+
 
 const router = createHashRouter([
   {
@@ -16,6 +18,7 @@ const router = createHashRouter([
       { path: "transactions", element: <Transactions /> },
       { path: "budgets", element: <Budgets /> },
       { path: "pots", element: <Pots /> },
+      { path: "recurringBills", element: <RecurringBills /> },
     ],
   },
   {

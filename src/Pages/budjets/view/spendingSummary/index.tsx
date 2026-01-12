@@ -11,9 +11,10 @@ const SpendingSummary = ({ budgetItems }: SpendingSummaryProps) => {
   const totalUsed = budgetItems.reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <div className="flex flex-col md:flex-row lg:flex-col w-full bg-white rounded-xl p-4 md:p-14 lg:p-6 md:justify-between lg:justify-start">
+<div className="relative lg:fixed lg:top-22">
+    <div className="flex flex-col md:flex-row lg:flex-col w-full bg-white rounded-xl p-4 md:p-14 lg:p-6 md:justify-between lg:justify-start ">
       {/* Chart Section */}
-      <div className="flex flex-col justify-center items-center gap-8 md:gap-32 lg:gap-22 py-4">
+      <div className="flex flex-col justify-center items-center gap-8 md:gap-32 lg:gap-22 py-4 ">
         <DonutChart
           labels={budgetItems.map((item) => item.label)}
           data={budgetItems.map((item) => item.amount)}
@@ -41,6 +42,7 @@ const SpendingSummary = ({ budgetItems }: SpendingSummaryProps) => {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 };

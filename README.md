@@ -77,10 +77,10 @@ npm run dev
 
 
 ## Future Improvements
-Include Transactions summary
-Add Log in & Sign up pages
-Add user dashboard
-Connect to an API for dynamic finance data
-Add light/dark theme persistence in local storage
-Unit tests for core UI components
+- Include Transactions summary
+- Add Log in & Sign up pages
+- Add user dashboard
+- Connect to an API for dynamic finance data
+- Add light/dark theme persistence in local storage
+- Unit tests for core UI components
 

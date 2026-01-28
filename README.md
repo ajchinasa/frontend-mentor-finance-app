@@ -1,54 +1,86 @@
-# React + TypeScript + Vite
+# Frontend Mentor – Finance App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive Personal Finance Dashboard built from a Frontend Mentor challenge using modern frontend technologies.
 
-Currently, two official plugins are available:
+This project demonstrates my ability to translate a real design spec into an interactive UI with clean code, responsive layout, and intuitive user interactions — skills directly applicable to product and scale-focused frontend engineering.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## Project Overview
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+This finance app allows users to:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- View a *financial summary* at a glance
+- Interact with UI components that reflect real user actions
+- Experience a fully responsive layout across devices
+- Includes dynamic state interactions
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This project was built to improve my ability to implement realistic design requirements with reusable components and state management patterns.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Live Demo
+
+(frontend-mentor-finance-app.vercel.app)
+
+
+---
+
+## Key Features
+
+- Pixel-perfect implementation of a professional design
+- Fully responsive layout for mobile and desktop
+- Clean and semantic HTML structure
+- Dynamic JavaScript interactions
+- Utility-first styling
+
+---
+
+## Tech Stack
+
+- HTML5
+- TailwindCSS
+- Typescript
+- React.js
+
+---
+
+## Installation & Setup
+
+1. Clone the repo  
+   ```bash
+   git clone https://github.com/ajchinasa/Frontend-mentor-finance-app.git
+
+   
+## Install dependencies
+
+npm install
+
+
+## Run the development server
+
+npm run dev
+
+---
+
+
+## What I Learned
+- Translating static design into responsive, production-like UI
+- Managing component state for interactive elements
+- Handling layout variations across screen sizes
+- Using modern tooling for development and build workflows
+- Implementing filtering and navigation of transaction data across multiple pages
+  
+
+
+---
+
+
+## Future Improvements
+Include Transactions summary
+Add Log in & Sign up pages
+Add user dashboard
+Connect to an API for dynamic finance data
+Add light/dark theme persistence in local storage
+Unit tests for core UI components
+
